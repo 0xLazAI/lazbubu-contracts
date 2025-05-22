@@ -52,7 +52,6 @@ contract Deploy is Script {
             })
         );
         registryProxy = new DataRegistryProxy(address(registry), registryInitData);
-        console.log();
         token.grantRole(token.MINTER_ROLE(), address(registry));
         vm.stopBroadcast();
     }
