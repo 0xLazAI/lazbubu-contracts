@@ -6,6 +6,11 @@
 deps/
 states/
 
+# Foundry cache and output
+cache/
+out/
+broadcast/
+
 # Debug info
 *.dbg.json
 *.tsbuildinfo
