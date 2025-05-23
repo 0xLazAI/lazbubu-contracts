@@ -6,8 +6,12 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 contract DataAnchorToken is ERC1155, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
+    event TokenMinted(address indexed to, uint256 indexed tokenId, string tokenURI);
+
     // Token ID => metadata URI
     mapping(uint256 => string) private _tokenURIs;
+    // Token ID => verified status
+    mapping(uint256 => bool) private _tokenVerified;
 
     uint256 private _tokenIdCounter;
 
@@ -16,10 +20,12 @@ contract DataAnchorToken is ERC1155, AccessControl {
         _grantRole(MINTER_ROLE, admin_);
     }
 
-    function mint(address to, uint256 amount, string memory tokenURI_) public onlyRole(MINTER_ROLE) {
+    function mint(address to, uint256 amount, string memory tokenURI_, bool verified_) public onlyRole(MINTER_ROLE) {
         uint256 tokenId = ++_tokenIdCounter;
         _mint(to, tokenId, amount, "");
         _setTokenURI(tokenId, tokenURI_);
+        setTokenVerified(tokenId, verified_);
+        emit TokenMinted(to, tokenId, tokenURI_);
     }
 
     function uri(uint256 tokenId) public view override returns (string memory) {
@@ -27,9 +33,18 @@ contract DataAnchorToken is ERC1155, AccessControl {
         return _tokenURIs[tokenId];
     }
 
-    function _setTokenURI(uint256 tokenId, string memory tokenURI_) internal {
+    function verified(uint256 tokenId) public view returns (bool) {
         require(_exists(tokenId), "DataAnchorToken: non-existent token");
+        return _tokenVerified[tokenId];
+    }
+
+    function _setTokenURI(uint256 tokenId, string memory tokenURI_) internal {
         _tokenURIs[tokenId] = tokenURI_;
+    }
+
+    function setTokenVerified(uint256 tokenId, bool verified_) public onlyRole(MINTER_ROLE) {
+        require(_exists(tokenId), "DataAnchorToken: non-existent token");
+        _tokenVerified[tokenId] = verified_;
     }
 
     function _exists(uint256 tokenId) internal view returns (bool) {
@@ -48,6 +63,10 @@ contract DataAnchorToken is ERC1155, AccessControl {
             _mint(to, tokenId, amounts[i], "");
             _setTokenURI(tokenId, tokenURIs[i]);
         }
+    }
+
+    function currentTokenId() public view returns (uint256) {
+        return _tokenIdCounter;
     }
 
     function supportsInterface(bytes4 interfaceId) public view override(ERC1155, AccessControl) returns (bool) {
