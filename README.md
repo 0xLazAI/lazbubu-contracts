@@ -29,5 +29,5 @@ forge snapshot
 ### Deploy
 
 ```shell
-forge script script/Deploy.s.sol:Deploy --rpc-url <your_rpc_url> --private-key <your_private_key> --broadcast
+forge script script/Deploy.s.sol:Deploy --rpc-url <your_rpc_url> --private-key <your_private_key> --broadcast --slow
 ```

@@ -44,7 +44,7 @@ contract DataRegistry is
     error FileAlreadyRewarded();
     error NoPermission();
     error InvalidUrl();
-    error InvalidAttestator();
+    error InvalidAttestator(bytes32 messageHash, bytes signature, address signer);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() ERC2771ContextUpgradeable(address(0)) {
@@ -224,11 +224,10 @@ contract DataRegistry is
             revert FileAlreadyRewarded();
         }
         // Validate the signature using the verified computing node.
-        bytes32 _messageHash =
-            keccak256(abi.encodePacked(fileProof.data.id, fileProof.data.fileUrl, fileProof.data.proofUrl));
+        bytes32 _messageHash = keccak256(abi.encode(fileProof.data));
         address signer = _messageHash.toEthSignedMessageHash().recover(fileProof.signature);
         if (!verifiedComputing.isNode(signer)) {
-            revert InvalidAttestator();
+            revert InvalidAttestator(_messageHash, fileProof.signature, signer);
         }
         // When the file has the timestamp and proof index field,
         // which denotes the file has been verfied
@@ -237,7 +236,7 @@ contract DataRegistry is
         // TODO: reward amount judged by the iDAO and Economic Model.
         file.rewardAmount = 1;
         // Mint the DAT.
-        token.mint(file.ownerAddress, file.rewardAmount, file.url);
+        token.mint(file.ownerAddress, file.rewardAmount, file.url, true);
 
         emit RewardRequested(file.ownerAddress, fileId, proofIndex, file.rewardAmount);
     }

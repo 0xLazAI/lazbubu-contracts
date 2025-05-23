@@ -23,10 +23,13 @@ contract Deploy is Script {
         console.log("admin address", admin);
         // Deploy token contract
         token = new DataAnchorToken(admin);
+        console.log("token address", address(token));
         // Deploy verified computing contract
         vc = new VerifiedComputing();
         bytes memory vcInitData = abi.encodeWithSelector(VerifiedComputing.initialize.selector, admin);
         vcProxy = new VerifiedComputingProxy(address(vc), vcInitData);
+        vc = VerifiedComputing(address(vcProxy));
+        console.log("verified computing address", address(vc));
         // Deploy data registry contract
         registry = new DataRegistry();
         name = "LazAI Data Registry";
@@ -52,6 +55,8 @@ contract Deploy is Script {
             })
         );
         registryProxy = new DataRegistryProxy(address(registry), registryInitData);
+        registry = DataRegistry(address(registryProxy));
+        console.log("data registry address", address(registry));
         token.grantRole(token.MINTER_ROLE(), address(registry));
         vm.stopBroadcast();
     }
