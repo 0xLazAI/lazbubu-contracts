@@ -26,12 +26,11 @@ contract VerifiedComputing is
     event JobSubmitted(uint256 indexed jobId, uint256 indexed fileId, address nodeAddress, uint256 bidAmount);
     event JobCanceled(uint256 indexed jobId);
 
-    event ProofAdded(address indexed attestator, uint256 indexed jobId, uint256 indexed fileId);
+    event JobComplete(address indexed attestator, uint256 indexed jobId, uint256 indexed fileId);
     event Claimed(address indexed nodeAddress, uint256 amount);
 
     error NodeAlreadyAdded();
     error NodeNotActive();
-    error JobCompleted();
     error InvalidJobStatus();
     error InvalidJobNode();
     error NothingToClaim();
@@ -208,7 +207,7 @@ contract VerifiedComputing is
         requestProof(fileId);
     }
 
-    function addProof(uint256 jobId) external override onlyActiveNode whenNotPaused {
+    function completeJob(uint256 jobId) external override onlyActiveNode whenNotPaused {
         Job storage job = _jobs[jobId];
         if (job.status != JobStatus.Submitted) {
             revert InvalidJobStatus();
@@ -219,7 +218,7 @@ contract VerifiedComputing is
         _nodes[_msgSender()].amount += job.bidAmount;
         _nodes[_msgSender()].jobIdsList.remove(jobId);
         job.status = JobStatus.Completed;
-        emit ProofAdded(_msgSender(), jobId, job.fileId);
+        emit JobComplete(_msgSender(), jobId, job.fileId);
     }
 
     function claim() external nonReentrant whenNotPaused {

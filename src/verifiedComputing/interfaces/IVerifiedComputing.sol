@@ -71,9 +71,9 @@ interface IVerifiedComputing {
     // Proof operations
 
     function requestProof(uint256 fileId) external payable;
-    function addProof(uint256 fileId) external;
 
     function submitJob(uint256 fileId) external payable;
+    function completeJob(uint256 jobId) external;
     function fileJobIds(uint256 fileId) external view returns (uint256[] memory);
     function jobsCount() external view returns (uint256);
     function getJob(uint256 jobId) external view returns (Job memory);
