@@ -64,6 +64,7 @@ contract WorkflowTest is Test {
             hex"779fa9b7dd09af4941e4627e8dd20d4dea9bec04e22d4b39773b1c966fda92e1517c62a3931e8d6676fb73d1f1bff7142e75beb70796521980e36cc9b87967051c";
         // Finish the Job
         vc.completeJob(jobId);
+        vc.claim();
         // Add proof to the data registry
         registry.addProof(1, IDataRegistry.Proof({signature: signature, data: data}));
         vm.stopPrank();
