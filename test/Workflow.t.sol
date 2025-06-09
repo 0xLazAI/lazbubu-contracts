@@ -6,12 +6,17 @@ import {DataRegistry} from "../src/dataRegistry/DataRegistry.sol";
 import {IDataRegistry} from "../src/dataRegistry/interfaces/IDataRegistry.sol";
 import {VerifiedComputing} from "../src/verifiedComputing/VerifiedComputing.sol";
 import {IVerifiedComputing} from "../src/verifiedComputing/interfaces/IVerifiedComputing.sol";
+import {AIProcess} from "../src/process/AIProcess.sol";
+import {Settlement} from "../src/settlement/Settlement.sol";
 import {Deploy} from "../script/Deploy.s.sol";
 
 contract WorkflowTest is Test {
     Deploy public deployer;
     VerifiedComputing vc;
     DataRegistry registry;
+    AIProcess inference;
+    AIProcess training;
+    Settlement settlement;
     address contributor;
     address node;
     address admin;
@@ -22,6 +27,9 @@ contract WorkflowTest is Test {
         deployer.run();
         vc = deployer.vc();
         registry = deployer.registry();
+        inference = deployer.inference();
+        training = deployer.training();
+        settlement = deployer.settlement();
         contributor = address(0x112233);
         node = address(0x34d9E02F9bB4E4C8836e38DF4320D4a79106F194);
         admin = deployer.admin();
@@ -90,5 +98,25 @@ contract WorkflowTest is Test {
         assertEq(newCounter, initialCounter + 1, "Counter should increment");
         assertEq(token.balanceOf(receiver, newCounter), mintAmount, "Balance mismatch");
         assertEq(token.uri(newCounter), tokenURI, "Token URI mismatch");
+    }
+
+    function test_Settlement() public {
+        assertTrue(settlement.hasRole(settlement.DEFAULT_ADMIN_ROLE(), admin));
+        assertTrue(training.hasRole(training.DEFAULT_ADMIN_ROLE(), admin));
+        assertTrue(inference.hasRole(inference.DEFAULT_ADMIN_ROLE(), admin));
+        // Test inference and training node register
+        vm.startPrank(admin);
+        inference.addNode(node, nodeUrl, "node public key");
+        vm.stopPrank();
+        // Test user
+        vm.startPrank(contributor);
+        vm.deal(contributor, 10 ether);
+        settlement.addUser{value: 10000}();
+        settlement.deposit{value: 10000}();
+        settlement.withdraw(2000);
+        settlement.depositInference(node, 2000);
+        AIProcess.Account memory account = inference.getAccount(contributor, node);
+        assertEq(account.node, node);
+        vm.stopPrank();
     }
 }

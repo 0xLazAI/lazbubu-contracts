@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	forge build
+	forge build --sizes
 
 .PHONY: fmt
 fmt:
@@ -8,4 +8,4 @@ fmt:
 
 .PHONY: test
 test:
-	forge test
+	forge test -vvv
