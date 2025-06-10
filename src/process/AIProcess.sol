@@ -288,7 +288,7 @@ contract AIProcess is
             account.balance -= refund.amount;
             account.pendingRefund -= refund.amount;
             totalAmount += refund.amount;
-            delete account.refunds[i];
+            refund.processed = true;
         }
 
         balance = account.balance;
