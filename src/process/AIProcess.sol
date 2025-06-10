@@ -169,9 +169,10 @@ contract AIProcess is
         }
         _nodeList.add(nodeAddress);
         _activeNodeList.add(nodeAddress);
-        _nodes[nodeAddress].status = NodeStatus.Active;
-        _nodes[nodeAddress].url = url;
-        _nodes[nodeAddress].publicKey = publicKey;
+        Node storage node = _nodes[nodeAddress];
+        node.status = NodeStatus.Active;
+        node.url = url;
+        node.publicKey = publicKey;
         emit NodeAdded(nodeAddress);
     }
 
