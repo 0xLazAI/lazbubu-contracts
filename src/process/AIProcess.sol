@@ -42,7 +42,7 @@ contract AIProcess is
     error AccountAlreadyExists(address user, address node);
     error InsufficientBalance(address user, address node);
     error InvalidAttestator(bytes32 messageHash, bytes signature, address signer);
-    error InvalidSettlementParams();
+    error NonceTooLow();
 
     modifier onlyActiveNode() {
         if (!(_nodes[_msgSender()].status == NodeStatus.Active)) {
@@ -306,7 +306,12 @@ contract AIProcess is
         if (account.balance < proof.data.cost) {
             revert InsufficientBalance(account.user, account.node);
         }
+        if (proof.data.nonce < account.nonce) {
+            revert NonceTooLow();
+        }
         _settlementFees(account, proof.data.cost);
+        // Update the account nonce.
+        account.nonce = proof.data.nonce;
     }
 
     function _settlementFees(Account storage account, uint256 cost) private {
