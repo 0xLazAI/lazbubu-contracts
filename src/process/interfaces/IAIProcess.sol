@@ -27,6 +27,7 @@ interface IAIProcess {
     }
 
     struct SettlementProofData {
+        // Use string here and sync with the chat/training id.
         string id;
         address user;
         uint256 cost;
