@@ -32,6 +32,7 @@ interface IAIProcess {
         address user;
         uint256 cost;
         uint256 nonce;
+        bytes userSignature;
     }
 
     struct SettlementProof {
