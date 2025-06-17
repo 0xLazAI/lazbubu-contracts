@@ -27,6 +27,7 @@ interface IDataRegistry {
         uint256 id;
         address ownerAddress;
         string url;
+        string hash;
         uint256 timestamp;
         uint256 proofIndex;
         uint256 proofsCount;
@@ -39,6 +40,7 @@ interface IDataRegistry {
         uint256 id;
         address ownerAddress;
         string url;
+        string hash;
         uint256 proofIndex;
         uint256 rewardAmount;
     }
@@ -59,10 +61,13 @@ interface IDataRegistry {
 
     // Privacy data and file operations
 
-    function addFile(string memory url) external returns (uint256);
-    function addFileWithPermissions(string memory url, address ownerAddress, Permission[] memory permissions)
-        external
-        returns (uint256);
+    function addFile(string memory url, string memory hash) external returns (uint256);
+    function addFileWithPermissions(
+        string memory url,
+        string memory hash,
+        address ownerAddress,
+        Permission[] memory permissions
+    ) external returns (uint256);
     function addPermissionForFile(uint256 fileId, address account, string memory key) external;
 
     // File view functions

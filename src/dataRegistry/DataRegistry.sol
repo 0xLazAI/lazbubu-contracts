@@ -144,6 +144,7 @@ contract DataRegistry is
         return FileResponse({
             id: fileId,
             url: file.url,
+            hash: file.hash,
             ownerAddress: file.ownerAddress,
             proofIndex: file.proofIndex,
             rewardAmount: file.rewardAmount
@@ -162,17 +163,17 @@ contract DataRegistry is
         return _files[fileId].permissions[account];
     }
 
-    function addFile(string memory url) external override whenNotPaused returns (uint256) {
-        return _addFile(url, _msgSender());
+    function addFile(string memory url, string memory hash) external override whenNotPaused returns (uint256) {
+        return _addFile(url, hash, _msgSender());
     }
 
-    function addFileWithPermissions(string memory url, address ownerAddress, Permission[] memory permissions)
-        external
-        override
-        whenNotPaused
-        returns (uint256)
-    {
-        uint256 fileId = _addFile(url, ownerAddress);
+    function addFileWithPermissions(
+        string memory url,
+        string memory hash,
+        address ownerAddress,
+        Permission[] memory permissions
+    ) external override whenNotPaused returns (uint256) {
+        uint256 fileId = _addFile(url, hash, ownerAddress);
         for (uint256 i = 0; i < permissions.length; i++) {
             _files[fileId].permissions[permissions[i].account] = permissions[i].key;
             emit PermissionGranted(fileId, permissions[i].account);
@@ -194,14 +195,16 @@ contract DataRegistry is
         emit ProofAdded(fileId, _files[fileId].ownerAddress, cachedProofCount, proof.data.proofUrl);
     }
 
-    function _addFile(string memory url, address ownerAddress) internal returns (uint256) {
+    function _addFile(string memory url, string memory hash, address ownerAddress) internal returns (uint256) {
         uint256 count = ++filesCount;
         bytes32 urlHash = keccak256(abi.encodePacked(url));
         if (_urlHashToFileId[urlHash] != 0) {
             revert FileUrlAlreadyUsed();
         }
-        _files[count].ownerAddress = ownerAddress;
-        _files[count].url = url;
+        File storage file = _files[count];
+        file.ownerAddress = ownerAddress;
+        file.url = url;
+        file.hash = hash;
         _urlHashToFileId[urlHash] = count;
         emit FileAdded(count, ownerAddress, url);
         return count;
