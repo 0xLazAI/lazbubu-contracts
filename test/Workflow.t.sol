@@ -45,7 +45,7 @@ contract WorkflowTest is Test {
         assertEq(registry.publicKey(), deployer.publicKey());
         assertEq(registry.version(), 1);
         vm.startPrank(contributor);
-        assertEq(registry.addFile("file1"), 1);
+        assertEq(registry.addFile("file1", "46af43ea5090cb4b13142010065bc0bcc1c88eaf9c64cf5ce9739d934d145a35"), 1);
         vm.stopPrank();
 
         vm.startPrank(admin);
