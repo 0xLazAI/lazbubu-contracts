@@ -215,6 +215,11 @@ contract DataRegistry is
         emit PublicKeyUpdated(newPublicKey);
     }
 
+    function updateToken(address newToken) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+        token = DataAnchorToken(newToken);
+        emit TokenUpdated(newToken);
+    }
+
     function updateVerifiedComputing(address newVerifiedComputing) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         verifiedComputing = IVerifiedComputing(newVerifiedComputing);
         emit VerifiedComputingUpdated(newVerifiedComputing);

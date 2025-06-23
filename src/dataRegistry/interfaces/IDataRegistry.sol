@@ -48,6 +48,7 @@ interface IDataRegistry {
     function name() external view returns (string memory);
     function version() external pure returns (uint256);
     function token() external view returns (DataAnchorToken);
+    function updateToken(address newToken) external;
     function verifiedComputing() external view returns (IVerifiedComputing);
     function updateVerifiedComputing(address newVerifiedComputing) external;
 
