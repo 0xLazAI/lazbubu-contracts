@@ -17,6 +17,8 @@ contract Deploy is Script {
     DataRegistryProxy public registryProxy;
     VerifiedComputing public vc;
     VerifiedComputingProxy public vcProxy;
+    AIProcess public query;
+    AIProcessProxy public queryProxy;
     AIProcess public inference;
     AIProcessProxy public inferenceProxy;
     AIProcess public training;
@@ -69,29 +71,41 @@ contract Deploy is Script {
         console.log("data registry address", address(registry));
         token.grantRole(token.MINTER_ROLE(), address(registry));
 
+        // Deploy query contract
+        query = new AIProcess();
+        bytes memory queryInitData = abi.encodeWithSelector(AIProcess.initialize.selector, admin, address(0), 3600);
+        queryProxy = new AIProcessProxy(address(query), queryInitData);
+        query = AIProcess(address(queryProxy));
+        console.log("query address", address(query));
+
         // Deploy inference contract
         inference = new AIProcess();
         bytes memory inferenceInitData = abi.encodeWithSelector(AIProcess.initialize.selector, admin, address(0), 3600);
         inferenceProxy = new AIProcessProxy(address(inference), inferenceInitData);
         inference = AIProcess(address(inferenceProxy));
         console.log("inference address", address(inference));
+
         // Deploy training contract
         training = new AIProcess();
         bytes memory trainingInitData = abi.encodeWithSelector(AIProcess.initialize.selector, admin, address(0), 3600);
         trainingProxy = new AIProcessProxy(address(training), trainingInitData);
         training = AIProcess(address(trainingProxy));
         console.log("training address", address(training));
+
         // Deploy settlement contract
         settlement = new Settlement();
-        bytes memory settlementInitData =
-            abi.encodeWithSelector(Settlement.initialize.selector, admin, address(inference), address(training));
+        bytes memory settlementInitData = abi.encodeWithSelector(
+            Settlement.initialize.selector, admin, address(query), address(inference), address(training)
+        );
         settlementProxy = new SettlementProxy(address(settlement), settlementInitData);
         settlement = Settlement(address(settlementProxy));
         console.log("settlement address", address(settlement));
 
-        // Update settlement address into the inference and training contracts
+        // Update settlement address into the data query, inference and training contracts
+        query.updateSettlement(address(settlement));
         inference.updateSettlement(address(settlement));
         training.updateSettlement(address(settlement));
+
         vm.stopBroadcast();
     }
 }

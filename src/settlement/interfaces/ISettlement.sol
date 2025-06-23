@@ -9,6 +9,7 @@ interface ISettlement {
         address addr;
         uint256 availableBalance;
         uint256 totalBalance;
+        address[] queryNodes;
         address[] inferenceNodes;
         address[] trainingNodes;
     }
@@ -19,6 +20,8 @@ interface ISettlement {
     }
 
     function version() external pure returns (uint256);
+    function query() external view returns (IAIProcess);
+    function updateQuery(address newQuery) external;
     function training() external view returns (IAIProcess);
     function updateTraining(address newTraining) external;
     function inference() external view returns (IAIProcess);
@@ -34,10 +37,13 @@ interface ISettlement {
     function deposit() external payable;
     function withdraw(uint256 amount) external;
 
-    function depositTraining(address node, uint256 amount) external;
+    function depositQuery(address node, uint256 amount) external;
     function depositInference(address node, uint256 amount) external;
-    function retrieveTraining(address[] memory nodes) external;
+    function depositTraining(address node, uint256 amount) external;
+
+    function retrieveQuery(address[] memory nodes) external;
     function retrieveInference(address[] memory nodes) external;
+    function retrieveTraining(address[] memory nodes) external;
 
     function settlement(address addr, uint256 cost) external;
 }

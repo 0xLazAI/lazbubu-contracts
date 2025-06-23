@@ -14,6 +14,7 @@ contract WorkflowTest is Test {
     Deploy public deployer;
     VerifiedComputing vc;
     DataRegistry registry;
+    AIProcess query;
     AIProcess inference;
     AIProcess training;
     Settlement settlement;
@@ -27,6 +28,7 @@ contract WorkflowTest is Test {
         deployer.run();
         vc = deployer.vc();
         registry = deployer.registry();
+        query = deployer.query();
         inference = deployer.inference();
         training = deployer.training();
         settlement = deployer.settlement();
@@ -102,6 +104,7 @@ contract WorkflowTest is Test {
 
     function test_Settlement() public {
         assertTrue(settlement.hasRole(settlement.DEFAULT_ADMIN_ROLE(), admin));
+        assertTrue(query.hasRole(query.DEFAULT_ADMIN_ROLE(), admin));
         assertTrue(training.hasRole(training.DEFAULT_ADMIN_ROLE(), admin));
         assertTrue(inference.hasRole(inference.DEFAULT_ADMIN_ROLE(), admin));
         // Test inference and training node register
