@@ -22,8 +22,9 @@ contract Settlement is
 
     bytes32 public constant MAINTAINER_ROLE = keccak256("MAINTAINER_ROLE");
 
-    event TrainingUpdated(address newTraining);
+    event QueryUpdated(address newQuery);
     event InferenceUpdated(address newInference);
+    event TrainingUpdated(address newTraining);
 
     event UserAdded(address indexed addr);
     event UserDeleted(address indexed addr);
@@ -37,16 +38,20 @@ contract Settlement is
         _disableInitializers();
     }
 
-    function initialize(address ownerAddress_, address inferenceAddress_, address trainingAddress_)
-        external
-        initializer
-    {
+    function initialize(
+        address ownerAddress_,
+        address queryAddress_,
+        address inferenceAddress_,
+        address trainingAddress_
+    ) external initializer {
         __AccessControl_init();
         __UUPSUpgradeable_init();
         __Pausable_init();
 
+        queryAddress = payable(queryAddress_);
         inferenceAddress = payable(inferenceAddress_);
         trainingAddress = payable(trainingAddress_);
+        query = IAIProcess(queryAddress_);
         inference = IAIProcess(inferenceAddress_);
         training = IAIProcess(trainingAddress_);
 
@@ -119,10 +124,10 @@ contract Settlement is
         _unpause();
     }
 
-    function updateTraining(address newTraining) external override onlyRole(DEFAULT_ADMIN_ROLE) {
-        trainingAddress = payable(newTraining);
-        training = IAIProcess(newTraining);
-        emit TrainingUpdated(newTraining);
+    function updateQuery(address newQuery) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+        queryAddress = payable(newQuery);
+        query = IAIProcess(newQuery);
+        emit QueryUpdated(newQuery);
     }
 
     function updateInference(address newInference) external override onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -131,10 +136,16 @@ contract Settlement is
         emit InferenceUpdated(newInference);
     }
 
+    function updateTraining(address newTraining) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+        trainingAddress = payable(newTraining);
+        training = IAIProcess(newTraining);
+        emit TrainingUpdated(newTraining);
+    }
+
     modifier onlyAIProcess() {
         require(
-            msg.sender == trainingAddress || msg.sender == inferenceAddress,
-            "Caller is not the training or inference contract"
+            msg.sender == queryAddress || msg.sender == trainingAddress || msg.sender == inferenceAddress,
+            "Caller is not the query, inference or training contract"
         );
         _;
     }
@@ -166,6 +177,9 @@ contract Settlement is
             revert UserNotExists(msg.sender);
         }
         User storage user = _getUser(msg.sender);
+        for (uint256 i = 0; i < user.queryNodes.length; i++) {
+            query.deleteAccount(msg.sender, user.queryNodes[i]);
+        }
         for (uint256 i = 0; i < user.inferenceNodes.length; i++) {
             inference.deleteAccount(msg.sender, user.inferenceNodes[i]);
         }
@@ -197,19 +211,19 @@ contract Settlement is
         payable(msg.sender).transfer(amount);
     }
 
-    function depositTraining(address node, uint256 amount) external override {
+    function depositQuery(address node, uint256 amount) external override {
         User storage user = _getUser(msg.sender);
         uint256 transferAmount = amount;
-        if (inference.accountExists(msg.sender, node)) {
-            uint256 retrievingAmount = inference.getAccountPendingRefund(msg.sender, node);
+        if (query.accountExists(msg.sender, node)) {
+            uint256 retrievingAmount = query.getAccountPendingRefund(msg.sender, node);
             uint256 cancelRetrievingAmount = Math.min(amount, retrievingAmount);
             transferAmount -= cancelRetrievingAmount;
-            inference.deposit{value: transferAmount}(msg.sender, node, cancelRetrievingAmount);
+            query.deposit{value: transferAmount}(msg.sender, node, cancelRetrievingAmount);
         } else {
-            inference.addAccount{value: transferAmount}(msg.sender, node);
-            user.trainingNodes.push(node);
+            query.addAccount{value: transferAmount}(msg.sender, node);
+            user.queryNodes.push(node);
         }
-        require(user.availableBalance >= transferAmount, "Insufficient balance");
+        // Note: we have the overflow check here.
         user.availableBalance -= transferAmount;
     }
 
@@ -225,8 +239,28 @@ contract Settlement is
             inference.addAccount{value: transferAmount}(msg.sender, node);
             user.inferenceNodes.push(node);
         }
-        require(user.availableBalance >= transferAmount, "Insufficient balance");
+        // Note: we have the overflow check here.
         user.availableBalance -= transferAmount;
+    }
+
+    function depositTraining(address node, uint256 amount) external override {
+        User storage user = _getUser(msg.sender);
+        uint256 transferAmount = amount;
+        if (training.accountExists(msg.sender, node)) {
+            uint256 retrievingAmount = training.getAccountPendingRefund(msg.sender, node);
+            uint256 cancelRetrievingAmount = Math.min(amount, retrievingAmount);
+            transferAmount -= cancelRetrievingAmount;
+            training.deposit{value: transferAmount}(msg.sender, node, cancelRetrievingAmount);
+        } else {
+            training.addAccount{value: transferAmount}(msg.sender, node);
+            user.trainingNodes.push(node);
+        }
+        // Note: we have the overflow check here.
+        user.availableBalance -= transferAmount;
+    }
+
+    function retrieveQuery(address[] memory nodes) external override {
+        _retrieve(nodes, query);
     }
 
     function retrieveTraining(address[] memory nodes) external override {
