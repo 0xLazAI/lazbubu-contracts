@@ -223,7 +223,7 @@ contract Settlement is
             query.addAccount{value: transferAmount}(msg.sender, node);
             user.queryNodes.push(node);
         }
-        require(user.availableBalance >= transferAmount, "Insufficient balance");
+        // Note: we have the overflow check here.
         user.availableBalance -= transferAmount;
     }
 
@@ -239,7 +239,7 @@ contract Settlement is
             inference.addAccount{value: transferAmount}(msg.sender, node);
             user.inferenceNodes.push(node);
         }
-        require(user.availableBalance >= transferAmount, "Insufficient balance");
+        // Note: we have the overflow check here.
         user.availableBalance -= transferAmount;
     }
 
@@ -255,7 +255,7 @@ contract Settlement is
             training.addAccount{value: transferAmount}(msg.sender, node);
             user.trainingNodes.push(node);
         }
-        require(user.availableBalance >= transferAmount, "Insufficient balance");
+        // Note: we have the overflow check here.
         user.availableBalance -= transferAmount;
     }
 
