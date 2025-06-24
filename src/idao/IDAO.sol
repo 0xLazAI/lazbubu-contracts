@@ -22,6 +22,7 @@ contract IDAO is
 
     event TokenUpdated(address newToken);
     event VerifiedComputingUpdated(address newVerifiedComputing);
+    event SettlementUpdated(address newSettlement);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() ERC2771ContextUpgradeable(address(0)) {
@@ -32,6 +33,7 @@ contract IDAO is
         address ownerAddress;
         address tokenAddress;
         address verifiedComputingAddress;
+        address settlementAddress;
         string name;
         string description;
     }
@@ -45,6 +47,7 @@ contract IDAO is
         description = params.description;
         token = DataAnchorToken(params.tokenAddress);
         verifiedComputing = IVerifiedComputing(params.verifiedComputingAddress);
+        settlement = ISettlement(params.settlementAddress);
 
         _setRoleAdmin(MAINTAINER_ROLE, DEFAULT_ADMIN_ROLE);
         _grantRole(DEFAULT_ADMIN_ROLE, params.ownerAddress);
@@ -123,5 +126,10 @@ contract IDAO is
     function updateVerifiedComputing(address newVerifiedComputing) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         verifiedComputing = IVerifiedComputing(newVerifiedComputing);
         emit VerifiedComputingUpdated(newVerifiedComputing);
+    }
+
+    function updateSettlement(address newSettlement) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+        settlement = ISettlement(newSettlement);
+        emit SettlementUpdated(newSettlement);
     }
 }
