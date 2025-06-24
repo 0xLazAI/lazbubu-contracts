@@ -13,7 +13,7 @@ import {IVerifiedComputing} from "../../verifiedComputing/interfaces/IVerifiedCo
 abstract contract DataRegistryStorageV1 is IDataRegistry {
     string public override name;
     uint256 public override filesCount;
-    DataAnchorToken public override token;
+    DataAnchoringToken public override token;
     IVerifiedComputing public override verifiedComputing;
     string public override publicKey;
     mapping(uint256 fileId => File) internal _files;

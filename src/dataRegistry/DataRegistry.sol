@@ -66,7 +66,7 @@ contract DataRegistry is
         __Pausable_init();
 
         name = params.name;
-        token = DataAnchorToken(params.tokenAddress);
+        token = DataAnchoringToken(params.tokenAddress);
         verifiedComputing = IVerifiedComputing(params.verifiedComputingAddress);
         publicKey = params.publicKey;
 
@@ -216,7 +216,7 @@ contract DataRegistry is
     }
 
     function updateToken(address newToken) external override onlyRole(DEFAULT_ADMIN_ROLE) {
-        token = DataAnchorToken(newToken);
+        token = DataAnchoringToken(newToken);
         emit TokenUpdated(newToken);
     }
 
