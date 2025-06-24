@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract DataAnchorToken is ERC1155, AccessControl {
+contract DataAnchoringToken is ERC1155, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     event TokenMinted(address indexed to, uint256 indexed tokenId, string tokenURI);
@@ -30,12 +30,12 @@ contract DataAnchorToken is ERC1155, AccessControl {
     }
 
     function uri(uint256 tokenId) public view override returns (string memory) {
-        require(_exists(tokenId), "DataAnchorToken: non-existent token");
+        require(_exists(tokenId), "DataAnchoringToken: non-existent token");
         return _tokenURIs[tokenId];
     }
 
     function verified(uint256 tokenId) public view returns (bool) {
-        require(_exists(tokenId), "DataAnchorToken: non-existent token");
+        require(_exists(tokenId), "DataAnchoringToken: non-existent token");
         return _tokenVerified[tokenId];
     }
 
@@ -44,7 +44,7 @@ contract DataAnchorToken is ERC1155, AccessControl {
     }
 
     function setTokenVerified(uint256 tokenId, bool verified_) public onlyRole(MINTER_ROLE) {
-        require(_exists(tokenId), "DataAnchorToken: non-existent token");
+        require(_exists(tokenId), "DataAnchoringToken: non-existent token");
         _tokenVerified[tokenId] = verified_;
     }
 
@@ -56,8 +56,8 @@ contract DataAnchorToken is ERC1155, AccessControl {
         public
         onlyRole(MINTER_ROLE)
     {
-        require(ids.length == amounts.length, "DataAnchorToken: arrays length mismatch");
-        require(ids.length == tokenURIs.length, "DataAnchorToken: arrays length mismatch");
+        require(ids.length == amounts.length, "DataAnchoringToken: arrays length mismatch");
+        require(ids.length == tokenURIs.length, "DataAnchoringToken: arrays length mismatch");
 
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 tokenId = ids[i];

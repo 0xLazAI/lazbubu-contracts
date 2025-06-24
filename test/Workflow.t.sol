@@ -1,7 +1,7 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {DataAnchorToken} from "../src/dat/DataAnchorToken.sol";
+import {DataAnchoringToken} from "../src/dat/DataAnchoringToken.sol";
 import {DataRegistry} from "../src/dataRegistry/DataRegistry.sol";
 import {IDataRegistry} from "../src/dataRegistry/interfaces/IDataRegistry.sol";
 import {VerifiedComputing} from "../src/verifiedComputing/VerifiedComputing.sol";
@@ -84,8 +84,8 @@ contract WorkflowTest is Test {
         vm.stopPrank();
     }
 
-    function test_DataAnchorToken() public {
-        DataAnchorToken token = deployer.token();
+    function test_DataAnchoringToken() public {
+        DataAnchoringToken token = deployer.token();
         address registryAddr = address(deployer.registry());
         vm.startPrank(registryAddr);
         assertTrue(token.hasRole(token.MINTER_ROLE(), registryAddr));

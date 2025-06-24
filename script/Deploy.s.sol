@@ -1,7 +1,7 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {DataAnchorToken} from "../src/dat/DataAnchorToken.sol";
+import {DataAnchoringToken} from "../src/dat/DataAnchoringToken.sol";
 import {DataRegistry} from "../src/dataRegistry/DataRegistry.sol";
 import {DataRegistryProxy} from "../src/dataRegistry/DataRegistryProxy.sol";
 import {VerifiedComputing} from "../src/verifiedComputing/VerifiedComputing.sol";
@@ -14,7 +14,7 @@ import {IDAO} from "../src/idao/IDAO.sol";
 import {IDAOProxy} from "../src/idao/IDAOProxy.sol";
 
 contract Deploy is Script {
-    DataAnchorToken public token;
+    DataAnchoringToken public token;
     DataRegistry public registry;
     DataRegistryProxy public registryProxy;
     VerifiedComputing public vc;
@@ -38,7 +38,7 @@ contract Deploy is Script {
         admin = tx.origin;
         console.log("admin address", admin);
         // Deploy token contract
-        token = new DataAnchorToken(admin);
+        token = new DataAnchoringToken(admin);
         console.log("token address", address(token));
         // Deploy verified computing contract
         vc = new VerifiedComputing();

@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 abstract contract IDAOStorageV1 is IIDAO {
     string public override name;
     string public override description;
-    DataAnchorToken public override token;
+    DataAnchoringToken public override token;
     IVerifiedComputing public override verifiedComputing;
     ISettlement public override settlement;
 }
