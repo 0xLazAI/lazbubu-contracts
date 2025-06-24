@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IVerifiedComputing} from "../../verifiedComputing/interfaces/IVerifiedComputing.sol";
 import {DataAnchorToken} from "../../dat/DataAnchorToken.sol";
+import {ISettlement} from "../../settlement/interfaces/ISettlement.sol";
 
 interface IIDAO {
     function name() external view returns (string memory);
@@ -16,6 +17,9 @@ interface IIDAO {
 
     function verifiedComputing() external view returns (IVerifiedComputing);
     function updateVerifiedComputing(address newVerifiedComputing) external;
+
+    function settlement() external view returns (ISettlement);
+    function updateSettlement(address newSettlement) external;
 
     function pause() external;
     function unpause() external;

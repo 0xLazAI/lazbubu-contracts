@@ -14,4 +14,5 @@ abstract contract IDAOStorageV1 is IIDAO {
     string public override description;
     DataAnchorToken public override token;
     IVerifiedComputing public override verifiedComputing;
+    ISettlement public override settlement;
 }

@@ -10,6 +10,8 @@ import {AIProcess} from "../src/process/AIProcess.sol";
 import {AIProcessProxy} from "../src/process/AIProcessProxy.sol";
 import {Settlement} from "../src/settlement/Settlement.sol";
 import {SettlementProxy} from "../src/settlement/SettlementProxy.sol";
+import {IDAO} from "../src/idao/IDAO.sol";
+import {IDAOProxy} from "../src/idao/IDAOProxy.sol";
 
 contract Deploy is Script {
     DataAnchorToken public token;
@@ -25,6 +27,8 @@ contract Deploy is Script {
     AIProcessProxy public trainingProxy;
     Settlement public settlement;
     SettlementProxy public settlementProxy;
+    IDAO public idao;
+    IDAOProxy public idaoProxy;
     address public admin;
     string public name;
     string public publicKey;
@@ -105,6 +109,23 @@ contract Deploy is Script {
         query.updateSettlement(address(settlement));
         inference.updateSettlement(address(settlement));
         training.updateSettlement(address(settlement));
+
+        // Deploy LazAI iDAO
+        idao = new IDAO();
+        bytes memory idaoInitData = abi.encodeWithSelector(
+            IDAO.initialize.selector,
+            IDAO.InitParams({
+                ownerAddress: admin,
+                tokenAddress: address(token),
+                verifiedComputingAddress: address(vc),
+                settlementAddress: address(settlement),
+                name: "LazAI",
+                description: "LazAI is a decentralized autonomous organization (DAO) dedicated to building a trustworthy and efficient ecosystem for AI computing and data. Through blockchain technology, we enable decentralized collaboration for AI model training, inference services, and data sharing, allowing participants to contribute, access, and distribute value fairly. Our mission is to break down data silos in AI development, establish a transparent, secure, and incentive-compatible AI community, and promote the inclusive and innovative development of artificial intelligence technology."
+            })
+        );
+        idaoProxy = new IDAOProxy(address(idao), idaoInitData);
+        idao = IDAO(address(idaoProxy));
+        console.log("idao address", address(idao));
 
         vm.stopBroadcast();
     }
