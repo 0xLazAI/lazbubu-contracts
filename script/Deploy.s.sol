@@ -127,6 +127,15 @@ contract Deploy is Script {
         idao = IDAO(address(idaoProxy));
         console.log("idao address", address(idao));
 
+        // Show proxy contract addresses
+        console.log("verified computing proxy address", address(vcProxy));
+        console.log("data registry proxy address", address(registryProxy));
+        console.log("query proxy address", address(queryProxy));
+        console.log("inference proxy address", address(inferenceProxy));
+        console.log("training proxy address", address(trainingProxy));
+        console.log("settlement proxy address", address(settlementProxy));
+        console.log("idao proxy address", address(idaoProxy));
+
         vm.stopBroadcast();
     }
 }
