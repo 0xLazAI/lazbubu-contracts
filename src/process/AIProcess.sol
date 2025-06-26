@@ -42,7 +42,7 @@ contract AIProcess is
     error AccountAlreadyExists(address user, address node);
     error InsufficientBalance(address user, address node);
     error InvalidAttestator(bytes32 messageHash, bytes signature, address signer);
-    error InvalidUserSignature(address user, uint256 nonce);
+    error InvalidUserSignature(bytes32 messageHash, uint256 nonce, address user, address node);
     error NonceTooLow();
 
     modifier onlyActiveNode() {
@@ -296,28 +296,22 @@ contract AIProcess is
         pendingRefund = account.pendingRefund;
     }
 
-    function settlementFees(SettlementProof memory proof) external override onlyActiveNode {
-        // Validate the signature using the verified computing node.
-        bytes32 _messageHash = keccak256(abi.encode(proof.data));
-        address signer = _messageHash.toEthSignedMessageHash().recover(proof.signature);
-        if (this.isNode(signer)) {
-            revert InvalidAttestator(_messageHash, proof.signature, signer);
+    function settlementFees(Settlement memory settlement) external override onlyActiveNode {
+        bytes32 _userMessageHash = keccak256(abi.encode(settlement.data.nonce, settlement.data.user, _msgSender()));
+        address user = _userMessageHash.toEthSignedMessageHash().recover(settlement.data.userSignature);
+        if (user != settlement.data.user) {
+            revert InvalidUserSignature(_userMessageHash, settlement.data.nonce, settlement.data.user, _msgSender());
         }
-        bytes32 _userMessageHash = keccak256(abi.encode(proof.data.nonce, proof.data.user, signer));
-        address user = _userMessageHash.toEthSignedMessageHash().recover(proof.data.userSignature);
-        if (user != proof.data.user) {
-            revert InvalidUserSignature(proof.data.user, proof.data.nonce);
-        }
-        Account storage account = _getAccount(proof.data.user, msg.sender);
-        if (account.balance < proof.data.cost) {
+        Account storage account = _getAccount(settlement.data.user, msg.sender);
+        if (account.balance < settlement.data.cost) {
             revert InsufficientBalance(account.user, account.node);
         }
-        if (proof.data.nonce < account.nonce) {
+        if (settlement.data.nonce < account.nonce) {
             revert NonceTooLow();
         }
-        _settlementFees(account, proof.data.cost);
+        _settlementFees(account, settlement.data.cost);
         // Update the account nonce.
-        account.nonce = proof.data.nonce;
+        account.nonce = settlement.data.nonce;
     }
 
     function _settlementFees(Account storage account, uint256 cost) private {
