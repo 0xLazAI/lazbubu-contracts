@@ -297,16 +297,10 @@ contract AIProcess is
     }
 
     function settlementFees(Settlement memory settlement) external override onlyActiveNode {
-        // Validate the signature using the verified computing node.
-        bytes32 _messageHash = keccak256(abi.encode(settlement.data));
-        address signer = _messageHash.toEthSignedMessageHash().recover(settlement.signature);
-        if (this.isNode(signer)) {
-            revert InvalidAttestator(_messageHash, settlement.signature, signer);
-        }
-        bytes32 _userMessageHash = keccak256(abi.encode(settlement.data.nonce, settlement.data.user, signer));
+        bytes32 _userMessageHash = keccak256(abi.encode(settlement.data.nonce, settlement.data.user, _msgSender()));
         address user = _userMessageHash.toEthSignedMessageHash().recover(settlement.data.userSignature);
         if (user != settlement.data.user) {
-            revert InvalidUserSignature(_userMessageHash, settlement.data.nonce, settlement.data.user, signer);
+            revert InvalidUserSignature(_userMessageHash, settlement.data.nonce, settlement.data.user, _msgSender());
         }
         Account storage account = _getAccount(settlement.data.user, msg.sender);
         if (account.balance < settlement.data.cost) {
