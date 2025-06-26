@@ -42,7 +42,7 @@ contract AIProcess is
     error AccountAlreadyExists(address user, address node);
     error InsufficientBalance(address user, address node);
     error InvalidAttestator(bytes32 messageHash, bytes signature, address signer);
-    error InvalidUserSignature(address user, uint256 nonce);
+    error InvalidUserSignature(bytes32 messageHash, uint256 nonce, address user, address node);
     error NonceTooLow();
 
     modifier onlyActiveNode() {
@@ -306,7 +306,7 @@ contract AIProcess is
         bytes32 _userMessageHash = keccak256(abi.encode(settlement.data.nonce, settlement.data.user, signer));
         address user = _userMessageHash.toEthSignedMessageHash().recover(settlement.data.userSignature);
         if (user != settlement.data.user) {
-            revert InvalidUserSignature(settlement.data.user, settlement.data.nonce);
+            revert InvalidUserSignature(_userMessageHash, settlement.data.nonce, settlement.data.user, signer);
         }
         Account storage account = _getAccount(settlement.data.user, msg.sender);
         if (account.balance < settlement.data.cost) {
