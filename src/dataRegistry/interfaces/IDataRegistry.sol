@@ -9,6 +9,7 @@ import {IVerifiedComputing} from "../../verifiedComputing/interfaces/IVerifiedCo
 interface IDataRegistry {
     struct ProofData {
         uint256 id;
+        uint256 score;
         string fileUrl;
         string proofUrl;
     }

@@ -242,8 +242,7 @@ contract DataRegistry is
         // which denotes the file has been verfied
         file.timestamp = block.timestamp;
         file.proofIndex = proofIndex;
-        // TODO: reward amount judged by the iDAO and Economic Model.
-        file.rewardAmount = 1;
+        file.rewardAmount = fileProof.data.score;
         // Mint the DAT.
         token.mint(file.ownerAddress, file.rewardAmount, file.url, true);
 
