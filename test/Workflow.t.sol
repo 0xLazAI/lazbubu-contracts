@@ -68,10 +68,10 @@ contract WorkflowTest is Test {
         vm.stopPrank();
         // For privacy data proof
         vm.startPrank(node);
-        IDataRegistry.ProofData memory data = IDataRegistry.ProofData({id: 1, fileUrl: "", proofUrl: ""});
+        IDataRegistry.ProofData memory data = IDataRegistry.ProofData({id: 1, score: 1, fileUrl: "", proofUrl: ""});
         // address 0x34d9E02F9bB4E4C8836e38DF4320D4a79106F194 signature
         bytes memory signature =
-            hex"779fa9b7dd09af4941e4627e8dd20d4dea9bec04e22d4b39773b1c966fda92e1517c62a3931e8d6676fb73d1f1bff7142e75beb70796521980e36cc9b87967051c";
+            hex"fd10d06dda9347726b73eabfa7565524090f1d259a799a580a61fc0f54a52b347f958e9efe2ea35193f6924acd796eb0cdd2eda415f18fe438cdb8a88b541d4e1b";
         // Finish the Job
         vc.completeJob(jobId);
         vc.claim();
