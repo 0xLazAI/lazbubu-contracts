@@ -35,5 +35,11 @@ forge script script/Deploy.s.sol:Deploy --rpc-url <your_rpc_url> --private-key <
 For example, we can deploy it on the LazAI testnet
 
 ```shell
+forge script script/Deploy.s.sol:Deploy --rpc-url https://hyperion-testnet.metisdevops.link --private-key $PRIVATE_KEY --broadcast --slow
+```
+
+Or the local devnet
+
+```shell
 forge script script/Deploy.s.sol:Deploy --rpc-url 127.0.0.1:8545 --private-key $PRIVATE_KEY --broadcast --slow
 ```
