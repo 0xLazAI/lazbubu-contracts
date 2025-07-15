@@ -91,15 +91,16 @@ contract WorkflowTest is Test {
         assertTrue(token.hasRole(token.MINTER_ROLE(), registryAddr));
         address receiver = address(0x112233);
         uint256 mintAmount = 1;
-        string memory tokenURI = "https://ipfs.file.url";
+        string memory fileUrl = "https://ipfs.file.url";
         uint256 initialCounter = token.currentTokenId();
         assertEq(initialCounter, 0, "Initial counter should be 0");
-        token.mint(receiver, mintAmount, tokenURI, false);
+        token.mint(receiver, mintAmount, fileUrl, false);
         vm.stopPrank();
         uint256 newCounter = token.currentTokenId();
         assertEq(newCounter, initialCounter + 1, "Counter should increment");
         assertEq(token.balanceOf(receiver, newCounter), mintAmount, "Balance mismatch");
-        assertEq(token.uri(newCounter), tokenURI, "Token URI mismatch");
+        assertEq(token.fileUrl(newCounter), fileUrl, "File Url mismatch");
+        assertEq(token.uri(newCounter), "", "Token URI mismatch");
     }
 
     function test_Settlement() public {
