@@ -21,12 +21,12 @@ contract DataAnchoringToken is ERC1155, AccessControl {
         _grantRole(MINTER_ROLE, admin_);
     }
 
-    function mint(address to, uint256 amount, string memory tokenUrl_, bool verified_) public onlyRole(MINTER_ROLE) {
+    function mint(address to, uint256 amount, string memory fileUrl_, bool verified_) public onlyRole(MINTER_ROLE) {
         uint256 tokenId = ++_tokenIdCounter;
         _mint(to, tokenId, amount, "");
-        _setFileUrl(tokenId, tokenUrl_);
+        _setFileUrl(tokenId, fileUrl_);
         setTokenVerified(tokenId, verified_);
-        emit TokenMinted(to, tokenId, tokenUrl_);
+        emit TokenMinted(to, tokenId, fileUrl_);
     }
 
     function fileUrl(uint256 tokenId) public view returns (string memory) {
