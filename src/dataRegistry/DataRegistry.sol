@@ -189,6 +189,17 @@ contract DataRegistry is
         emit PermissionGranted(fileId, account);
     }
 
+    function addFileAndRequestProof(
+        string memory url,
+        string memory hash,
+        address ownerAddress,
+        Permission[] memory permissions
+    ) external payable override whenNotPaused returns (uint256) {
+        uint256 fileId = this.addFileWithPermissions(url, hash, ownerAddress, permissions);
+        verifiedComputing.requestProof{value: msg.value}(fileId);
+        return fileId;
+    }
+
     function addProof(uint256 fileId, Proof memory proof) external override whenNotPaused {
         uint256 cachedProofCount = ++_files[fileId].proofsCount;
         _files[fileId].proofs[cachedProofCount] = proof;

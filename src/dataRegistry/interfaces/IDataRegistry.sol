@@ -71,6 +71,12 @@ interface IDataRegistry {
         Permission[] memory permissions
     ) external returns (uint256);
     function addPermissionForFile(uint256 fileId, address account, string memory key) external;
+    function addFileAndRequestProof(
+        string memory url,
+        string memory hash,
+        address ownerAddress,
+        Permission[] memory permissions
+    ) external payable returns (uint256);
 
     // File view functions
 
