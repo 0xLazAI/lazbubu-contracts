@@ -89,6 +89,7 @@ contract WorkflowTest is Test {
         address registryAddr = address(deployer.registry());
         vm.startPrank(registryAddr);
         assertTrue(token.hasRole(token.MINTER_ROLE(), registryAddr));
+        assertTrue(token.hasRole(token.DEFAULT_ADMIN_ROLE(), admin));
         address receiver = address(0x112233);
         uint256 mintAmount = 1;
         string memory fileUrl = "https://ipfs.file.url";

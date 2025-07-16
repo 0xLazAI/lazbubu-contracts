@@ -16,6 +16,11 @@ contract DataAnchoringToken is ERC1155, AccessControl {
 
     uint256 private _tokenIdCounter;
 
+    modifier onlyRoleOr(bytes32 role1, bytes32 role2) {
+        require(hasRole(role1, _msgSender()) || hasRole(role2, _msgSender()), "Must have one of the specified roles");
+        _;
+    }
+
     constructor(address admin_) ERC1155("") {
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
         _grantRole(MINTER_ROLE, admin_);
@@ -48,7 +53,7 @@ contract DataAnchoringToken is ERC1155, AccessControl {
         _tokenVerified[tokenId] = verified_;
     }
 
-    function setURI(string memory uri_) public onlyRole(MINTER_ROLE) {
+    function setURI(string memory uri_) public onlyRoleOr(MINTER_ROLE, DEFAULT_ADMIN_ROLE) {
         _setURI(uri_);
     }
 
