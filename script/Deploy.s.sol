@@ -1,7 +1,7 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {DataAnchoringToken} from "../src/dat/DataAnchoringToken.sol";
+import {Lazbubu} from "../src/dat/Lazbubu.sol";
 import {DataRegistry} from "../src/dataRegistry/DataRegistry.sol";
 import {DataRegistryProxy} from "../src/dataRegistry/DataRegistryProxy.sol";
 import {VerifiedComputing} from "../src/verifiedComputing/VerifiedComputing.sol";
@@ -14,7 +14,7 @@ import {IDAO} from "../src/idao/IDAO.sol";
 import {IDAOProxy} from "../src/idao/IDAOProxy.sol";
 
 contract Deploy is Script {
-    DataAnchoringToken public token;
+    Lazbubu public token;
     DataRegistry public registry;
     DataRegistryProxy public registryProxy;
     VerifiedComputing public vc;
@@ -38,7 +38,8 @@ contract Deploy is Script {
         admin = tx.origin;
         console.log("admin address", admin);
         // Deploy token contract
-        token = new DataAnchoringToken(admin);
+        token = new Lazbubu();
+        token.initialize(admin, "https://lazai.com/token/{id}.json");
         console.log("token address", address(token));
         // Deploy verified computing contract
         vc = new VerifiedComputing();

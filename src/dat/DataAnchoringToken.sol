@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-contract DataAnchoringToken is ERC1155, AccessControl {
+contract DataAnchoringToken is ERC1155Upgradeable, AccessControlUpgradeable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     event TokenMinted(address indexed to, uint256 indexed tokenId, string fileUrl);
@@ -16,22 +16,18 @@ contract DataAnchoringToken is ERC1155, AccessControl {
 
     uint256 private _tokenIdCounter;
 
-    modifier onlyRoleOr(bytes32 role1, bytes32 role2) {
-        require(hasRole(role1, _msgSender()) || hasRole(role2, _msgSender()), "Must have one of the specified roles");
-        _;
-    }
-
-    constructor(address admin_) ERC1155("") {
+    function initialize(address admin_, string memory uri_) public initializer {
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
         _grantRole(MINTER_ROLE, admin_);
+        _setURI(uri_);
     }
 
-    function mint(address to, uint256 amount, string memory fileUrl_, bool verified_) public onlyRole(MINTER_ROLE) {
+    function mint(address to, uint256 amount, string memory tokenUrl_, bool verified_) public onlyRole(MINTER_ROLE) {
         uint256 tokenId = ++_tokenIdCounter;
         _mint(to, tokenId, amount, "");
-        _setFileUrl(tokenId, fileUrl_);
+        _setFileUrl(tokenId, tokenUrl_);
         setTokenVerified(tokenId, verified_);
-        emit TokenMinted(to, tokenId, fileUrl_);
+        emit TokenMinted(to, tokenId, tokenUrl_);
     }
 
     function fileUrl(uint256 tokenId) public view returns (string memory) {
@@ -53,7 +49,7 @@ contract DataAnchoringToken is ERC1155, AccessControl {
         _tokenVerified[tokenId] = verified_;
     }
 
-    function setURI(string memory uri_) public onlyRoleOr(MINTER_ROLE, DEFAULT_ADMIN_ROLE) {
+    function setURI(string memory uri_) public onlyRole(MINTER_ROLE) {
         _setURI(uri_);
     }
 
@@ -79,7 +75,7 @@ contract DataAnchoringToken is ERC1155, AccessControl {
         return _tokenIdCounter;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC1155, AccessControl) returns (bool) {
-        return ERC1155.supportsInterface(interfaceId) || AccessControl.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view override(ERC1155Upgradeable, AccessControlUpgradeable) returns (bool) {
+        return ERC1155Upgradeable.supportsInterface(interfaceId) || AccessControlUpgradeable.supportsInterface(interfaceId);
     }
 }
