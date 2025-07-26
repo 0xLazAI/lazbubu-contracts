@@ -29,6 +29,10 @@ contract Lazbubu is DataAnchoringToken {
         _;
     }
 
+    function initialize(address admin_, string memory uri_) public initializer {
+        _DataAnchoringToken_init(admin_, uri_);
+    }
+
     function adventure(uint256 tokenId, uint8 adventureType, uint256 contentHash, Permit memory permit) public onlyPermit(PERMIT_TYPE_ADVENTURE, abi.encodePacked(tokenId, adventureType, contentHash), permit) {
         uint32 timestamp = uint32(block.timestamp);
         address user = ownerOf[tokenId];

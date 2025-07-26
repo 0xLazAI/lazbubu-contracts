@@ -16,7 +16,7 @@ contract DataAnchoringToken is ERC1155Upgradeable, AccessControlUpgradeable {
 
     uint256 private _tokenIdCounter;
 
-    function initialize(address admin_, string memory uri_) public initializer {
+    function _DataAnchoringToken_init(address admin_, string memory uri_) public initializer {
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
         _grantRole(MINTER_ROLE, admin_);
         _setURI(uri_);
