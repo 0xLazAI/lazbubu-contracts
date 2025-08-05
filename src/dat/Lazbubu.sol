@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "./DataAnchoringToken.sol";
-
+import "./utils.sol";
 
 contract Lazbubu is DataAnchoringToken {
     bytes32 constant PERMIT_SIGNER_ROLE = keccak256("PERMIT_SIGNER_ROLE");
@@ -88,39 +88,8 @@ contract Lazbubu is DataAnchoringToken {
         );
         require(permit.dataHash == uint256(keccak256(params)), "Lazbubu: invalid data hash");
         require(nextPermitNonce[_msgSender()] == permit.nonce, "Lazbubu: invalid nonce");
-        require(hasRole(PERMIT_SIGNER_ROLE, _getSigner(permit)), "Lazbubu: invalid permit signature");
+        require(hasRole(PERMIT_SIGNER_ROLE, LazbubuUtils.getSigner(permit)), "Lazbubu: invalid permit signature");
         nextPermitNonce[_msgSender()]++;
-    }
-
-    function _getSigner(
-        Permit memory permit
-    ) private pure returns (address) {
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(
-                permit.permitType,
-                permit.nonce,
-                permit.dataHash,
-                permit.expire
-            )
-        );
-        return recoverSigner(messageHash, permit.sig);
-    }
-
-    function recoverSigner(bytes32 _messageHash, bytes memory sig) private pure returns (address) {
-        require(sig.length == 65, "invalid signature length");
-
-        bytes32 r; bytes32 s; uint8 v;
-        assembly {
-            r := mload(add(sig, 32))
-            s := mload(add(sig, 64))
-            v := byte(0, mload(add(sig, 96)))
-        }
-
-        bytes32 ethSignedMessageHash = keccak256(
-            abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash)
-        );
-
-        return ecrecover(ethSignedMessageHash, v, r, s);
     }
 }
 
