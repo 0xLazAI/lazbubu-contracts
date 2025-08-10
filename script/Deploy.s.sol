@@ -54,16 +54,7 @@ contract Deploy is Script {
         // Deploy data registry contract
         registry = new DataRegistry();
         name = "LazAI Data Registry";
-        publicKey = "-----BEGIN RSA PUBLIC KEY-----\n"
-            "MIIBigKCAYEAgXskqGZXdIIsAvWi3AhLO4cStx4wCiWWK2kHL34M1B2ic3hE4PP6\n"
-            "VjUvcPz1loiDT0GhlrrvrUeWcJpElQrTAsuYPNmt8GCIec6n4LvEkIUfomLMsTJ0\n"
-            "tD16xb/xfv8F5Jo38cazNuoXN2X/knsQcWWbk2FTUsRETNb5kR6j1vcAWTCdyD+w\n"
-            "iuKZ6DqG0RSOnN0ES9NFTYa995GWxIobQWioh8U3hCyRwJ65C342IPuOoQJrMc9X\n"
-            "yx5jQiwisQfhbRj6wVOi1Qq9lROZGz5DaWtqgsB2/+BzMBV0ducdD72qcwr1hsN/\n"
-            "1xzQtEFnQTAZft1o41KOP/OxM98ezo1VV6BjIjHTcBAALhRqGTT5GtZ8RanFzkgK\n"
-            "yCu/GpUzYETOetm/Eio7pQo3WlTQtyXWZtnWvZb1394WxYQBryJG+h7YvN8rQv4S\n"
-            "ps7XUytVWo4Orjp4SoIkt3R0nr8kfMBhwncY1GnlrPi334cV46pCwFHNxO229Yb9\n" "nqVggyRxv9s9AgMBAAE=\n"
-            "-----END RSA PUBLIC KEY-----\n" "\n";
+        publicKey = vm.envString("PUBLIC_KEY");
         bytes memory registryInitData = abi.encodeWithSelector(
             DataRegistry.initialize.selector,
             DataRegistry.InitParams({

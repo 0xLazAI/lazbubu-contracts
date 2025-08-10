@@ -1,17 +1,12 @@
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.13;
+
+import "@openzeppelin/contracts/utils/Base64.sol";
+
 library LazbubuUtils {
     function makeMetadata(string memory name, string memory description, string memory image) public pure returns (string memory) {
         return string(abi.encodePacked(
-    "{
-	\"name\": \"",
-	name,
-	"\",
-	\"description\": \"",
-	description,
-	"\",
-	\"image\": \"",
-	image,
-	"\"
-    }"
+    "{\"name\": \"", name, "\", \"description\": \"", description, "\", \"image\": \"", image, "\" }"
         ));
     }
 
@@ -52,4 +47,12 @@ library LazbubuUtils {
 
         return ecrecover(ethSignedMessageHash, v, r, s);
     }
+}
+
+struct Permit {
+    uint8 permitType;
+    uint128 nonce;
+    uint dataHash;
+    uint expire;
+    bytes sig;
 }
