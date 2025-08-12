@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.13;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "./DataAnchoringToken.sol";
 import "./utils.sol";
 
-contract Lazbubu is DataAnchoringToken {
+contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     bytes32 public constant PERMIT_SIGNER_ROLE = keccak256("PERMIT_SIGNER_ROLE");
     uint8 public constant PERMIT_TYPE_ADVENTURE = 1;
     uint8 public constant PERMIT_TYPE_CREATE_MEMORY = 2;
@@ -33,6 +34,10 @@ contract Lazbubu is DataAnchoringToken {
     function initialize(address admin_, string memory uri_) public initializer {
         _DataAnchoringToken_init(admin_, uri_);
         _grantRole(PERMIT_SIGNER_ROLE, admin_);
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal virtual override onlyRole(DEFAULT_ADMIN_ROLE) {
+        // do nothing
     }
 
     function adventure(uint256 tokenId, uint8 adventureType, uint256 contentHash, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_ADVENTURE, abi.encodePacked(tokenId, adventureType, contentHash), permit) {
@@ -86,7 +91,7 @@ contract Lazbubu is DataAnchoringToken {
         uint32 timestamp = uint32(block.timestamp);
         dayStart = timestamp - (timestamp - state.firstTimeMessageQuotaClaimed) % 1 days;
         dayEnd = dayStart + 1 days;
-        claimed = dayStart < state.lastTimeMessageQuotaClaimed && state.lastTimeMessageQuotaClaimed < dayEnd;
+        claimed = dayStart <= state.lastTimeMessageQuotaClaimed;
         firstTimeClaimed = state.firstTimeMessageQuotaClaimed;
     }
 
