@@ -22,7 +22,7 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     mapping(uint256 => address) public ownerOf;
 
     modifier onlyTokenOwner(uint256 tokenId) {
-        require(ownerOf[tokenId] == _msgSender(), "Lazbubu: not token owner");
+        require(ownerOf[tokenId] == _msgSender(), "not token owner");
         _;
     }
 
@@ -37,35 +37,32 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     }
 
     function _authorizeUpgrade(address newImplementation) internal virtual override onlyRole(DEFAULT_ADMIN_ROLE) {
-        // do nothing
     }
 
     function adventure(uint256 tokenId, uint8 adventureType, uint256 contentHash, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_ADVENTURE, abi.encodePacked(tokenId, adventureType, contentHash), permit) {
-        uint32 timestamp = uint32(block.timestamp);
         address user = ownerOf[tokenId];
         states[tokenId].adventures.push(Adventure({
             user: user,
             adventureType: adventureType,
             contentHash: contentHash,
-            timestamp: timestamp
+            timestamp: uint32(block.timestamp)
         }));
         states[tokenId].adventureCount++;
         emit AdventureCreated(tokenId, user, adventureType, contentHash);
     }
 
     function createMemory(uint256 tokenId, uint256 contentHash, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_CREATE_MEMORY, abi.encodePacked(tokenId, contentHash), permit) {
-        uint32 timestamp = uint32(block.timestamp);
         address user = ownerOf[tokenId];
         states[tokenId].memories.push(Memory({
             contentHash: contentHash,
-            timestamp: timestamp
+            timestamp: uint32(block.timestamp)
         }));
         emit MemoryCreated(tokenId, user, contentHash);
     }
 
     function setLevel(uint256 tokenId, uint8 level, bool mature, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_SET_LEVEL, abi.encodePacked(tokenId, level, mature), permit) {
         LazbubuState storage state = states[tokenId];
-        require(state.maturity == 0, "Lazbubu: token already mature");
+        require(state.maturity == 0, "token already mature");
         address user = ownerOf[tokenId];
         state.level = level;
         state.maturity = mature ? uint32(block.timestamp) : 0;
@@ -78,7 +75,7 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
             state.firstTimeMessageQuotaClaimed = uint32(block.timestamp);
         } else {
             (bool claimed, , , ) = messageQuotaClaimedToday(tokenId);
-            require(!claimed, "Lazbubu: message quota already claimed");
+            require(!claimed, "message quota already claimed");
         }
 
         state.lastTimeMessageQuotaClaimed = uint32(block.timestamp);
@@ -89,26 +86,24 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     function messageQuotaClaimedToday(uint256 tokenId) public view returns (bool claimed, uint32 dayStart, uint32 dayEnd, uint32 firstTimeClaimed) {
         LazbubuState memory state = states[tokenId];
         uint32 timestamp = uint32(block.timestamp);
-        dayStart = timestamp - (timestamp - state.firstTimeMessageQuotaClaimed) % 1 days;
+        firstTimeClaimed = state.firstTimeMessageQuotaClaimed;
+        dayStart = timestamp - (timestamp - firstTimeClaimed) % 1 days;
         dayEnd = dayStart + 1 days;
         claimed = dayStart <= state.lastTimeMessageQuotaClaimed;
-        firstTimeClaimed = state.firstTimeMessageQuotaClaimed;
     }
 
     function _update(address from, address to, uint256[] memory ids, uint256[] memory values) internal virtual override {
         super._update(from, to, ids, values);
         for (uint256 i = 0; i < ids.length; i++) {
-            require(values[i] == 1, "Lazbubu: invalid amount");
+            require(values[i] == 1, "invalid amount");
+            uint256 tokenId = ids[i];
             if (from == address(0)) {
-                // Ensure token hasn't been minted before
-                require(ownerOf[ids[i]] == address(0), "Lazbubu: token already minted");
-                // birthday is set when minted
-                states[ids[i]].birthday = uint32(block.timestamp);
+                require(ownerOf[tokenId] == address(0), "token already minted");
+                states[tokenId].birthday = uint32(block.timestamp);
             } else {
-                // normal transfer (not allowed for non-mature token)
-                require(states[ids[i]].maturity > 0, "Lazbubu: non-mature token cannot be transferred");
+                require(states[tokenId].maturity > 0, "non-mature token cannot be transferred");
             }
-            ownerOf[ids[i]] = to;
+            ownerOf[tokenId] = to;
         }
     }
 
@@ -118,14 +113,11 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
         bytes memory params,
         Permit memory permit
     ) private {
-        require(permit.permitType == permitType, "Lazbubu: invalid permit type");
-        require(
-            permit.expire == 0 || permit.expire > block.timestamp,
-           "Lazbubu: permit expired"
-        );
-        require(permit.dataHash == uint256(keccak256(params)), "Lazbubu: invalid data hash");
-        require(nextPermitNonce[tokenId] == permit.nonce, "Lazbubu: invalid nonce");
-        require(hasRole(PERMIT_SIGNER_ROLE, LazbubuUtils.getSigner(permit)), "Lazbubu: invalid permit signature");
+        require(permit.permitType == permitType, "invalid permit type");
+        require(permit.expire == 0 || permit.expire > block.timestamp, "permit expired");
+        require(permit.dataHash == uint256(keccak256(params)), "invalid data hash");
+        require(nextPermitNonce[tokenId] == permit.nonce, "invalid nonce");
+        require(hasRole(PERMIT_SIGNER_ROLE, LazbubuUtils.getSigner(permit)), "invalid permit signature");
         nextPermitNonce[tokenId]++;
     }
 }
