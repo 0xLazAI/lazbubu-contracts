@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import "./DataAnchoringToken.sol";
 import "./utils.sol";
 
@@ -11,6 +12,8 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     uint8 public constant PERMIT_TYPE_ADVENTURE = 1;
     uint8 public constant PERMIT_TYPE_CREATE_MEMORY = 2;
     uint8 public constant PERMIT_TYPE_SET_LEVEL = 3;
+    string public constant name = "Lazbubu";
+    string public constant symbol = "LAZBUBU";
 
     event AdventureCreated(uint256 indexed tokenId, address indexed user, uint8 adventureType, uint256 contentHash);
     event MemoryCreated(uint256 indexed tokenId, address indexed user, uint256 contentHash);
@@ -21,8 +24,22 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     mapping(uint256 => uint128) public nextPermitNonce;
     mapping(uint256 => address) public ownerOf;
 
+    error NotTokenOwner();
+    error TokenAlreadyMinted();
+    error NonMatureTokenCannotBeTransferred();
+    error MessageQuotaAlreadyClaimed();
+    error InvalidPermitType();
+    error PermitExpired();
+    error InvalidDataHash();
+    error InvalidNonce();
+    error InvalidAmount();
+    error TokenAlreadyMature();
+    error InvalidPermitSignature();
+
     modifier onlyTokenOwner(uint256 tokenId) {
-        require(ownerOf[tokenId] == _msgSender(), "not token owner");
+        if (ownerOf[tokenId] != _msgSender()) {
+            revert NotTokenOwner();
+        }
         _;
     }
 
@@ -62,7 +79,9 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
 
     function setLevel(uint256 tokenId, uint8 level, bool mature, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_SET_LEVEL, abi.encodePacked(tokenId, level, mature), permit) {
         LazbubuState storage state = states[tokenId];
-        require(state.maturity == 0, "token already mature");
+        if (state.maturity != 0) {
+            revert TokenAlreadyMature();
+        }
         address user = ownerOf[tokenId];
         state.level = level;
         state.maturity = mature ? uint32(block.timestamp) : 0;
@@ -75,7 +94,9 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
             state.firstTimeMessageQuotaClaimed = uint32(block.timestamp);
         } else {
             (bool claimed, , , ) = messageQuotaClaimedToday(tokenId);
-            require(!claimed, "message quota already claimed");
+            if (claimed) {
+                revert MessageQuotaAlreadyClaimed();
+            }
         }
 
         state.lastTimeMessageQuotaClaimed = uint32(block.timestamp);
@@ -95,13 +116,19 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     function _update(address from, address to, uint256[] memory ids, uint256[] memory values) internal virtual override {
         super._update(from, to, ids, values);
         for (uint256 i = 0; i < ids.length; i++) {
-            require(values[i] == 1, "invalid amount");
+            if (values[i] != 1) {
+                revert InvalidAmount();
+            }
             uint256 tokenId = ids[i];
             if (from == address(0)) {
-                require(ownerOf[tokenId] == address(0), "token already minted");
+                if (ownerOf[tokenId] != address(0)) {
+                    revert TokenAlreadyMinted();
+                }
                 states[tokenId].birthday = uint32(block.timestamp);
             } else {
-                require(states[tokenId].maturity > 0, "non-mature token cannot be transferred");
+                if (states[tokenId].maturity == 0) {
+                    revert NonMatureTokenCannotBeTransferred();
+                }
             }
             ownerOf[tokenId] = to;
         }
@@ -113,11 +140,21 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
         bytes memory params,
         Permit memory permit
     ) private {
-        require(permit.permitType == permitType, "invalid permit type");
-        require(permit.expire == 0 || permit.expire > block.timestamp, "permit expired");
-        require(permit.dataHash == uint256(keccak256(params)), "invalid data hash");
-        require(nextPermitNonce[tokenId] == permit.nonce, "invalid nonce");
-        require(hasRole(PERMIT_SIGNER_ROLE, LazbubuUtils.getSigner(permit)), "invalid permit signature");
+        if (permit.permitType != permitType) {
+            revert InvalidPermitType();
+        }
+        if (permit.expire != 0 && permit.expire <= block.timestamp) {
+            revert PermitExpired();
+        }
+        if (permit.dataHash != uint256(keccak256(params))) {
+            revert InvalidDataHash();
+        }
+        if (nextPermitNonce[tokenId] != permit.nonce) {
+            revert InvalidNonce();
+        }
+        if (!hasRole(PERMIT_SIGNER_ROLE, LazbubuUtils.getSigner(permit))) {
+            revert InvalidPermitSignature();
+        }
         nextPermitNonce[tokenId]++;
     }
 }

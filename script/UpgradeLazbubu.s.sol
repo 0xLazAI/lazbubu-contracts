@@ -3,8 +3,6 @@ pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
 import {Lazbubu} from "../src/dat/Lazbubu.sol";
-import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import {DataRegistry} from "../src/dataRegistry/DataRegistry.sol";
 
 contract UpgradeLazbubu is Script {
     
@@ -14,10 +12,10 @@ contract UpgradeLazbubu is Script {
         console.log("Start upgrade Lazbubu contract...");
         console.log("Proxy address:", proxyAddress);
         
+        vm.startBroadcast();
         Lazbubu newImplementation = new Lazbubu();
         console.log("New implementation address:", address(newImplementation));
         
-        vm.startBroadcast();
         Lazbubu(proxyAddress).upgradeToAndCall(address(newImplementation), "");
         console.log("Upgrade completed!");
         vm.stopBroadcast();
