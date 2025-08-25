@@ -17,7 +17,8 @@ broadcast/
 
 # Optional
 .env
-.env.local
+.env.test
+.env.prod
 
 # Solc bin
 bin

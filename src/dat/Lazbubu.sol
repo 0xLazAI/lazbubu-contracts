@@ -16,7 +16,8 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     string public constant symbol = "LAZBUBU";
 
     event AdventureCreated(uint256 indexed tokenId, address indexed user, uint8 adventureType, uint256 contentHash);
-    event MemoryCreated(uint256 indexed tokenId, address indexed user, uint256 contentHash);
+    event MemoryCreated(uint256 indexed tokenId, uint256 indexed id, address indexed user, uint256 contentHash);
+    event MemoryDeleted(uint256 indexed tokenId, uint256 indexed id, address indexed user);
     event LevelSet(uint256 indexed tokenId, address indexed user, uint8 level, bool mature);
     event MessageQuotaClaimed(uint256 indexed tokenId, address indexed user);
 
@@ -70,11 +71,18 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
 
     function createMemory(uint256 tokenId, uint256 contentHash, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_CREATE_MEMORY, abi.encodePacked(tokenId, contentHash), permit) {
         address user = ownerOf[tokenId];
-        states[tokenId].memories.push(Memory({
+        uint256 id= uint256(keccak256(abi.encodePacked(tokenId, contentHash, uint32(block.timestamp))));
+        states[tokenId].memories[id] = Memory({
             contentHash: contentHash,
             timestamp: uint32(block.timestamp)
-        }));
-        emit MemoryCreated(tokenId, user, contentHash);
+        });
+        emit MemoryCreated(tokenId, id, user, contentHash);
+    }
+
+    function deleteMemory(uint256 tokenId, uint256 id) public {
+        address user = ownerOf[tokenId];
+        delete states[tokenId].memories[id];
+        emit MemoryDeleted(tokenId, id, user);
     }
 
     function setLevel(uint256 tokenId, uint8 level, bool mature, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_SET_LEVEL, abi.encodePacked(tokenId, level, mature), permit) {
@@ -92,25 +100,11 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
         LazbubuState storage state = states[tokenId];
         if (state.firstTimeMessageQuotaClaimed == 0) {
             state.firstTimeMessageQuotaClaimed = uint32(block.timestamp);
-        } else {
-            (bool claimed, , , ) = messageQuotaClaimedToday(tokenId);
-            if (claimed) {
-                revert MessageQuotaAlreadyClaimed();
-            }
         }
 
         state.lastTimeMessageQuotaClaimed = uint32(block.timestamp);
 
         emit MessageQuotaClaimed(tokenId, ownerOf[tokenId]);
-    }
-    
-    function messageQuotaClaimedToday(uint256 tokenId) public view returns (bool claimed, uint32 dayStart, uint32 dayEnd, uint32 firstTimeClaimed) {
-        LazbubuState memory state = states[tokenId];
-        uint32 timestamp = uint32(block.timestamp);
-        firstTimeClaimed = state.firstTimeMessageQuotaClaimed;
-        dayStart = timestamp - (timestamp - firstTimeClaimed) % 1 days;
-        dayEnd = dayStart + 1 days;
-        claimed = dayStart <= state.lastTimeMessageQuotaClaimed;
     }
 
     function _update(address from, address to, uint256[] memory ids, uint256[] memory values) internal virtual override {
@@ -177,7 +171,7 @@ struct LazbubuState {
     uint32 maturity;
     uint32 adventureCount;
     Adventure[] adventures;
-    Memory[] memories;
+    mapping(uint256 => Memory) memories;
     uint32 lastTimeMessageQuotaClaimed;
     uint32 firstTimeMessageQuotaClaimed;
 }
