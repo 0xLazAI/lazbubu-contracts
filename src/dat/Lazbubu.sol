@@ -12,6 +12,7 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     uint8 public constant PERMIT_TYPE_ADVENTURE = 1;
     uint8 public constant PERMIT_TYPE_CREATE_MEMORY = 2;
     uint8 public constant PERMIT_TYPE_SET_LEVEL = 3;
+    uint8 public constant PERMIT_TYPE_SET_PERSONALITY = 4;
     string public constant name = "Lazbubu";
     string public constant symbol = "LAZBUBU";
 
@@ -20,6 +21,7 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     event MemoryDeleted(uint256 indexed tokenId, uint256 indexed id, address indexed user);
     event LevelSet(uint256 indexed tokenId, address indexed user, uint8 level, bool mature);
     event MessageQuotaClaimed(uint256 indexed tokenId, address indexed user);
+    event PersonalitySet(uint256 indexed tokenId, address indexed user, string personality);
 
     mapping(uint256 => LazbubuState) public states;
     mapping(uint256 => uint128) public nextPermitNonce;
@@ -83,6 +85,12 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
         address user = ownerOf[tokenId];
         delete states[tokenId].memories[id];
         emit MemoryDeleted(tokenId, id, user);
+    }
+
+    function setPersonality(uint256 tokenId, string memory personality, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_SET_PERSONALITY, abi.encodePacked(tokenId, personality), permit) {
+        address user = ownerOf[tokenId];
+        states[tokenId].personality = personality;
+        emit PersonalitySet(tokenId, user, personality);
     }
 
     function setLevel(uint256 tokenId, uint8 level, bool mature, Permit memory permit) public onlyPermit(tokenId, PERMIT_TYPE_SET_LEVEL, abi.encodePacked(tokenId, level, mature), permit) {
@@ -174,4 +182,5 @@ struct LazbubuState {
     mapping(uint256 => Memory) memories;
     uint32 lastTimeMessageQuotaClaimed;
     uint32 firstTimeMessageQuotaClaimed;
+    string personality;
 }
