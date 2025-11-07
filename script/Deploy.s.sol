@@ -13,8 +13,12 @@ import {Settlement} from "../src/settlement/Settlement.sol";
 import {SettlementProxy} from "../src/settlement/SettlementProxy.sol";
 import {IDAO} from "../src/idao/IDAO.sol";
 import {IDAOProxy} from "../src/idao/IDAOProxy.sol";
+import {PermitVerifier} from "../src/dat/PermitVerifier.sol";
+import {Migrator} from "../src/dat/Migrator.sol";
 
 contract Deploy is Script {
+    PermitVerifier public permitVerifier;
+    Migrator public migrator;
     Lazbubu public token;
     LazbubuProxy public tokenProxy;
     DataRegistry public registry;
@@ -39,12 +43,22 @@ contract Deploy is Script {
         vm.startBroadcast();
         admin = tx.origin;
         console.log("admin address", admin);
+        // Deploy permit verifier contract
+
+        permitVerifier = new PermitVerifier();
+        console.log("permit verifier address", address(permitVerifier));
+
         // Deploy token contract
         token = new Lazbubu();
-        bytes memory tokenInitData = abi.encodeWithSelector(Lazbubu.initialize.selector, admin, "https://lazai.com/token/{id}.json");
+        bytes memory tokenInitData = abi.encodeWithSelector(Lazbubu.initialize.selector, admin, "https://lazai.com/token/{id}.json", address(permitVerifier));
         tokenProxy = new LazbubuProxy(address(token), tokenInitData);
         token = Lazbubu(address(tokenProxy));
         console.log("token address", address(token));
+        permitVerifier.setServiceTo(address(token));
+        permitVerifier.setSigner(admin);
+        permitVerifier.setAdmin(admin);
+        console.log("permit verifier initialized");
+
         // Deploy verified computing contract
         vc = new VerifiedComputing();
         bytes memory vcInitData = abi.encodeWithSelector(VerifiedComputing.initialize.selector, admin);
@@ -70,6 +84,11 @@ contract Deploy is Script {
         registry = DataRegistry(address(registryProxy));
         console.log("data registry address", address(registry));
         token.grantRole(token.MINTER_ROLE(), address(registry));
+
+        // Deploy migrator contract
+        migrator = new Migrator(address(token));
+        console.log("migrator address", address(migrator));
+        token.grantRole(token.MIGRATE_ROLE(), address(migrator));
 
         // Deploy query contract
         query = new AIProcess();
