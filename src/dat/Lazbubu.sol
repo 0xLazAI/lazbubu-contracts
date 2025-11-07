@@ -108,14 +108,14 @@ contract Lazbubu is UUPSUpgradeable, DataAnchoringToken {
     }
 
     function migrateToken(bytes memory tokenData) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        (uint256 tokenId, address owner, string memory fileUrl, uint32 birthday, uint8 level, uint32 maturity, uint32 adventureCount, uint32 lastTimeMessageQuotaClaimed, uint32 firstTimeMessageQuotaClaimed, string memory personality) = abi.decode(tokenData, (uint256, address, string, uint32, uint8, uint32, uint32, uint32, uint32, string));
+        (uint256 tokenId, address owner, string memory fileUrl, uint32 birthday, uint8 level, uint32 maturity, uint32 lastTimeMessageQuotaClaimed, uint32 firstTimeMessageQuotaClaimed, string memory personality) = abi.decode(tokenData, (uint256, address, string, uint32, uint8, uint32, uint32, uint32, string));
+        require(currentTokenId() == tokenId, "Token ID mismatch");
         mint(owner, 1, fileUrl, true);
-        require(tokenId == currentTokenId(), "Token ID mismatch");
         LazbubuState storage state = states[tokenId];
         state.birthday = birthday;
         state.level = level;
         state.maturity = maturity;
-        state.adventureCount = adventureCount;
+        state.adventureCount = 0;
         state.lastTimeMessageQuotaClaimed = lastTimeMessageQuotaClaimed;
         state.firstTimeMessageQuotaClaimed = firstTimeMessageQuotaClaimed;
         state.personality = personality;
