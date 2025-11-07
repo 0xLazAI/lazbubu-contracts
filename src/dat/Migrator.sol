@@ -12,7 +12,7 @@ interface ILazbubu {
 contract Migrator is Ownable {
     ILazbubu public lazbubu;
 
-    constructor(address lazbubuContract_) Ownable(msg.sender) {
+    constructor(address owner, address lazbubuContract_) Ownable(owner) {
         lazbubu = ILazbubu(lazbubuContract_);
     }
 

@@ -86,7 +86,7 @@ contract Deploy is Script {
         token.grantRole(token.MINTER_ROLE(), address(registry));
 
         // Deploy migrator contract
-        migrator = new Migrator(address(token));
+        migrator = new Migrator(admin, address(token));
         console.log("migrator address", address(migrator));
         token.grantRole(token.MIGRATE_ROLE(), address(migrator));
 
