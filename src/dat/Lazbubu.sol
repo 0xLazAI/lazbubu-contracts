@@ -163,7 +163,6 @@ struct Memory {
 }
 
 struct LazbubuState {
-    address owner;
     uint32 birthday;
     uint8 level;
     uint32 maturity;
@@ -171,4 +170,5 @@ struct LazbubuState {
     uint32 lastTimeMessageQuotaClaimed;
     uint32 firstTimeMessageQuotaClaimed;
     string personality;
+    address owner;
 }
