@@ -35,6 +35,7 @@ contract SimpleLazbubu is UUPSUpgradeable, ERC1155Upgradeable, AccessControlUpgr
     uint256 public currentTokenId;
     mapping(uint256 => LazbubuState) public states;
     address public permitVerifier;
+    mapping(uint256 => string) public fileUrl;
 
     error NotTokenOwner();
     error TokenAlreadyMinted();
@@ -68,9 +69,10 @@ contract SimpleLazbubu is UUPSUpgradeable, ERC1155Upgradeable, AccessControlUpgr
     function _authorizeUpgrade(address newImplementation) internal virtual override onlyRole(DEFAULT_ADMIN_ROLE) {
     }
 
-    function mint(address to, string memory tokenUrl_, Permit memory permit) public onlyPermit(0, PERMIT_TYPE_MINT, abi.encodePacked(to, tokenUrl_), permit) {
+    function mint(address to, string memory tokenUrl_, Permit memory permit) public onlyPermit(_tokenIdForMint(to), PERMIT_TYPE_MINT, abi.encodePacked(to, tokenUrl_), permit) {
         uint256 tokenId = ++currentTokenId;
         _mint(to, tokenId, 1, "");
+        fileUrl[tokenId] = tokenUrl_;
         emit TokenMinted(to, tokenId, tokenUrl_);
     }
 
@@ -137,6 +139,10 @@ contract SimpleLazbubu is UUPSUpgradeable, ERC1155Upgradeable, AccessControlUpgr
             }
             states[tokenId].owner = to;
         }
+    }
+
+    function _tokenIdForMint(address to) internal pure returns (uint256) {
+        return 2**255 + uint256(uint160(to));
     }
 
 }
